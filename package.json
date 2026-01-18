@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@vitest/ui": "^4.0.17",
+    "ts-node": "^10.9.2",
+    "vitest": "^4.0.17"
+  },
+  "scripts": {
+    "code": "node run-problem.js",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
+  }
+}
