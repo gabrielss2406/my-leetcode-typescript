@@ -9,24 +9,25 @@ if (!problemNumber) {
   process.exit(1);
 }
 
-const srcDir = path.join(__dirname, 'src');
+const testsDir = path.join(__dirname, 'tests');
 let testFileName;
 
 try {
-  const files = fs.readdirSync(srcDir);
+  const files = fs.readdirSync(testsDir);
   testFileName = files.find(file => file.startsWith(`${problemNumber}.`) && file.endsWith('.test.ts'));
 } catch (error) {
-  console.error(`Erro ao ler o diretório 'src': ${error.message}`);
+  console.error(`Erro ao ler o diretório 'tests': ${error.message}`);
   process.exit(1);
 }
 
 if (!testFileName) {
-  console.error(`Erro: Não foi encontrado nenhum arquivo de teste começando com "${problemNumber}." na pasta 'src'.`);
+  console.error(`Erro: Não foi encontrado nenhum arquivo de teste começando com "${problemNumber}." na pasta 'tests'.`);
   console.error(`Certifique-se de que o arquivo de teste exista e termine com '.test.ts' (ex: ${problemNumber}.NomeDoProblema.test.ts).`);
+  console.error(`Se você criou um novo problema, certifique-se de adicionar um arquivo .ts à pasta 'src' e um arquivo .test.ts à pasta 'tests'.`);
   process.exit(1);
 }
 
-const testFilePath = path.join(srcDir, testFileName);
+const testFilePath = path.join(testsDir, testFileName);
 
 try {
   console.log(`Executando testes para: ${testFileName}`);
