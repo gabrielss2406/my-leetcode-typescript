@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { lengthOfLongestSubstring } from './3.LongestSubstringWhitoutRepeatingCharacters';
+import { lengthOfLongestSubstring } from '../src/3.LongestSubstringWhitoutRepeatingCharacters';
 
 describe('lengthOfLongestSubstring', () => {
     test('deve retornar 3 para s = "abcabcbb"', () => {

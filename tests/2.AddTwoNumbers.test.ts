@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { addTwoNumbers } from './2.AddTwoNumbers';
+import { addTwoNumbers } from '../src/2.AddTwoNumbers';
 
 class ListNode {
     val: number;

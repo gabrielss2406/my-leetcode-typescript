@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { twoSum } from './1.TwoSum';
+import { twoSum } from '../src/1.TwoSum';
 
 describe('twoSum', () => {
   test('deve retornar os índices [0, 1] para nums = [2, 7, 11, 15] e target = 9', () => {
