@@ -1,5 +1,48 @@
 const fs = require('fs').promises;
 const path = require('path');
+const showdown = require('showdown');
+
+async function buildBook() {
+    const converter = new showdown.Converter();
+    const referencesDir = path.join(__dirname, 'references');
+    let bookItemsHtml = '';
+    let referenceLinksHtml = ''; // For navigation links
+
+    try {
+        const files = await fs.readdir(referencesDir);
+        // Sort files alphabetically for consistent order
+        files.sort();
+
+        for (const file of files) {
+            if (file.endsWith('.md')) {
+                const filePath = path.join(referencesDir, file);
+                const markdownContent = await fs.readFile(filePath, 'utf8');
+                const htmlContent = converter.makeHtml(markdownContent);
+                
+                const title = file.replace('.md', '').replace(/([A-Z])/g, ' $1').trim();
+                const id = `ref-${file.replace('.md', '').toLowerCase().replace(/\s/g, '-')}`;
+
+                bookItemsHtml += `
+                    <div class="problem" id="${id}">
+                        <div class="problem-header">
+                            <h2>${title}</h2>
+                            <button class="toggle-book-content">Show Content</button>
+                        </div>
+                        <div class="code-container"> <!-- Reusing existing class for toggle functionality -->
+                            ${htmlContent}
+                        </div>
+                    </div>
+                `;
+                referenceLinksHtml += `<a href="#${id}">${title}</a>`;
+            }
+        }
+    } catch (error) {
+        console.error("Error building book:", error);
+        return { bookItemsHtml: '', referenceLinksHtml: '' }; // Return empty
+    }
+
+    return { bookItemsHtml, referenceLinksHtml };
+}
 
 async function main() {
     console.log("Starting build...");
@@ -42,6 +85,9 @@ async function main() {
     
     // Sort problems by number
     problemsData.sort((a, b) => parseInt(a.name) - parseInt(b.name));
+    
+    // Build the reference book
+    const { bookItemsHtml, referenceLinksHtml } = await buildBook();
 
     // 2. Stringify the data to be injected into the HTML
     const problemsJSON = JSON.stringify(problemsData, null, 2);
@@ -101,13 +147,19 @@ async function main() {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            gap: 10px; /* Space between items */
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
         }
         #theme-toggle {
              padding: 8px 12px;
         }
         .container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 1rem auto;
             background: var(--container-bg);
             padding: 2rem;
             border-radius: 8px;
@@ -170,16 +222,51 @@ async function main() {
         button:hover {
             background-color: var(--button-hover-bg);
         }
+        .book-navigation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .book-navigation a {
+            text-decoration: none;
+            color: var(--link-color, #0366d6); /* Default link color */
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border-radius: 6px;
+            padding: 5px 15px;
+            transition: background-color 0.2s;
+        }
+        .book-navigation a:hover {
+            background-color: var(--button-hover-bg);
+        }
+        .book-navigation a:visited {
+            color: var(--link-color, #0366d6); /* Ensure visited links are still styled */
+        }
     </style>
 </head>
 <body>
     <div class="header-container">
-        <h1> </h1>
-        <button id="theme-toggle">Toggle Theme</button>
+        <h1>LeetCode Solutions</h1>
+        <div class="header-controls">
+            <button id="scroll-to-references">Go to References</button>
+            <button id="theme-toggle">Toggle Theme</button>
+        </div>
     </div>
+
     <div class="container">
         <h1>Solved LeetCode Problems</h1>
         <div id="problems-list"></div>
+    </div>
+    
+    <div class="container" id="book-container">
+        <h1>References</h1>
+
+        <div id="book-list">
+            ${bookItemsHtml}
+        </div>
     </div>
 
     <script>
@@ -201,7 +288,32 @@ async function main() {
         const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
         applyTheme(initialTheme);
 
+        // Scroll to references button
+        document.getElementById('scroll-to-references').addEventListener('click', () => {
+            document.getElementById('book-container').scrollIntoView({ behavior: 'smooth' });
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Function to handle toggling content visibility
+            function setupToggle(buttonSelector, contentSelector) {
+                document.querySelectorAll(buttonSelector).forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.closest('.problem-header').nextElementSibling;
+                        const isVisible = content.style.display === 'block';
+                        if (isVisible) {
+                            content.style.display = 'none';
+                            button.textContent = 'Show Content';
+                        } else {
+                            content.style.display = 'block';
+                            button.textContent = 'Hide Content';
+                        }
+                    });
+                });
+            }
+
+            // Setup toggles for book content
+            setupToggle('.toggle-book-content', '.code-container');
+
             const problemsList = document.getElementById('problems-list');
             if (!problems || problems.length === 0) {
                 problemsList.innerHTML = '<p>No problems found.</p>';
