@@ -100,6 +100,7 @@ async function main() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LeetCode Solutions</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -376,6 +377,7 @@ async function main() {
     // 4. Write to dist/index.html
     try {
         await fs.mkdir(distDir, { recursive: true });
+        await fs.copyFile('icon.ico', path.join(distDir, 'icon.ico'));
         await fs.writeFile(path.join(distDir, 'index.html'), htmlContent);
         console.log("Build successful! Files are in the /dist directory.");
     } catch (error) {
